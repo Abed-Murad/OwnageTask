@@ -8,12 +8,12 @@ import javax.inject.Singleton
 
 @Singleton
 class ContactsRepository @Inject constructor(var contactsDao: ContactsDao) {
+
     fun getContacts(): LiveData<List<ContactEntity>> {
         return contactsDao.getAll()
     }
 
     fun updateContacts(contactsList: List<ContactEntity>) {
-        contactsDao.deleteAll()
         contactsDao.insertAll(contactsList)
     }
 }

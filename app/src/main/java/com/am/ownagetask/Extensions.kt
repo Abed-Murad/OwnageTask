@@ -43,8 +43,7 @@ fun ContentResolver.updateRoomContacts(context: Context) {
                         lastnumber = number
                         when (phoneCursor.getInt(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))) {
                             ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> {
-                                ContactsDatabase.getInstance(context).contactsDao()
-                                    .insert(ContactEntity(id, name, lastnumber))
+                                ContactsDatabase.getInstance(context).contactsDao().insert(ContactEntity(id, name, lastnumber))
                                 Log.d(TAG, "id:$id  name:$name  number:$lastnumber ")
                             }
                             ContactsContract.CommonDataKinds.Phone.TYPE_HOME -> Log.d(

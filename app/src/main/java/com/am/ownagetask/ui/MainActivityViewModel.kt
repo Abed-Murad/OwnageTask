@@ -13,18 +13,13 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(var contactsRepository: ContactsRepository) :
     ViewModel() {
 
-    private val _contacts: MutableLiveData<List<ContactEntity>> = MutableLiveData()
-    val contacts: LiveData<List<ContactEntity>> = _contacts
-
 
     fun updateContacts(contactsList: List<ContactEntity>) {
-        contactsList
+        contactsRepository.updateContacts(contactsList)
     }
 
-    private fun getContacts() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _contacts.value = contactsRepository.getContacts().value
-        }
+     fun getContacts(): LiveData<List<ContactEntity>> {
+        return contactsRepository.getContacts()
     }
 
 

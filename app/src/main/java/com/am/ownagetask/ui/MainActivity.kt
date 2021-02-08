@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
@@ -31,13 +32,10 @@ class MainActivity : DaggerAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
-        startService()
-
+        observeData()
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
-            contentResolver.updateRoomContacts(this@MainActivity)
-            observeData()
+            startService()
         } else {
             // you do not have permission go request runtime permissions
             requestPermission(
@@ -74,20 +72,26 @@ class MainActivity : DaggerAppCompatActivity() {
 
 
     private fun observeData() {
-        mainActivityViewModel.contacts.observe(this, Observer {
-            contactsRecyclerView.adapter =
-                ContactsAdapter(it.map { ContactItem(it.id, it.name, it.phoneNumber) })
-            contactsRecyclerView.layoutManager = LinearLayoutManager(this)
-            contactsRecyclerView.setHasFixedSize(true)
-            contactsRecyclerView.visibility = View.VISIBLE
-            contactsRecyclerView.addItemDecoration(
-                DividerItemDecoration(
-                    contactsRecyclerView.context,
-                    DividerItemDecoration.VERTICAL
+        mainActivityViewModel.getContacts().observe(this, Observer {
+            if (it != null && it.isNotEmpty()) {
+                contactsRecyclerView.adapter =
+                    ContactsAdapter(it.map { ContactItem(it.id, it.name, it.phoneNumber) })
+                contactsRecyclerView.layoutManager = LinearLayoutManager(this)
+                contactsRecyclerView.setHasFixedSize(true)
+                contactsRecyclerView.visibility = View.VISIBLE
+                contactsRecyclerView.addItemDecoration(
+                    DividerItemDecoration(
+                        contactsRecyclerView.context,
+                        DividerItemDecoration.VERTICAL
+                    )
                 )
-            )
 
-            progressBar.visibility = View.GONE
+                progressBar.visibility = View.GONE
+
+            } else {
+                val x = it
+                Log.d("ttt" , "hi")
+            }
         })
     }
 
@@ -100,7 +104,8 @@ class MainActivity : DaggerAppCompatActivity() {
             REQUEST_RUNTIME_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // you have permission go ahead
-                    observeData()
+                    contentResolver.updateRoomContacts(this)
+                    startService()
                 } else {
                     // you do not have permission show toast.
                 }
