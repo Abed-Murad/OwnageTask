@@ -1,4 +1,4 @@
-package com.am.ownagetask
+package com.am.ownagetask.background
 
 import android.app.PendingIntent
 import android.app.Service
@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.provider.ContactsContract
 import androidx.core.app.NotificationCompat
+import com.am.ownagetask.R
 import com.am.ownagetask.ui.MainActivity
 import kotlinx.coroutines.InternalCoroutinesApi
 

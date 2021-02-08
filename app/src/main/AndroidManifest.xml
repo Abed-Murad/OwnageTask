@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".ContactsService"
+            android:name=".background.ContactsService"
             android:enabled="true"
             android:exported="true"/>
 

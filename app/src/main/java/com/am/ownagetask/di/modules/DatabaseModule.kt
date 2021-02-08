@@ -1,4 +1,4 @@
-package com.am.ownagetask.di
+package com.am.ownagetask.di.modules
 
 import android.content.Context
 import com.am.ownagetask.repository.ContactsRepository

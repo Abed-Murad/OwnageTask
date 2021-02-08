@@ -1,4 +1,4 @@
-package com.am.ownagetask.di
+package com.am.ownagetask.di.modules
 
 import android.app.Application
 import android.content.Context
@@ -12,7 +12,7 @@ import javax.inject.Singleton
 class AppModule {
     @Provides
     @Singleton
-    fun provideContext(app: Application): Context {
+    fun providesContext(app: Application): Context {
         return app.applicationContext
     }
 

@@ -14,6 +14,11 @@ class ContactsRepository @Inject constructor(var contactsDao: ContactsDao) {
     }
 
     fun updateContacts(contactsList: List<ContactEntity>) {
+        contactsDao.deleteAll()
         contactsDao.insertAll(contactsList)
+    }
+
+    fun syncWithTheCloud(contactsList: List<ContactEntity>) {
+        TODO()
     }
 }

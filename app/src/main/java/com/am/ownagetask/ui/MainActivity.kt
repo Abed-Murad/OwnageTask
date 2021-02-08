@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
@@ -14,14 +13,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.am.ownagetask.ContactsService
+import com.am.ownagetask.background.ContactsService
 import com.am.ownagetask.R
 import com.am.ownagetask.di.ViewModelFactory
-import com.am.ownagetask.room.ContactEntity
 import com.am.ownagetask.updateRoomContacts
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
+
 
 class MainActivity : DaggerAppCompatActivity() {
 
@@ -33,6 +32,8 @@ class MainActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
         observeData()
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
             startService()
@@ -89,8 +90,8 @@ class MainActivity : DaggerAppCompatActivity() {
                 progressBar.visibility = View.GONE
 
             } else {
-                val x = it
-                Log.d("ttt" , "hi")
+                progressBar.visibility = View.VISIBLE
+                contactsRecyclerView.visibility = View.GONE
             }
         })
     }

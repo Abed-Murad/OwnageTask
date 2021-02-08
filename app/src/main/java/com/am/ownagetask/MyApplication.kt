@@ -1,6 +1,5 @@
 package com.am.ownagetask
 
-import android.app.Application
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,9 +7,13 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.room.Update
+import androidx.work.*
+import com.am.ownagetask.background.HourlyWorker
 import com.am.ownagetask.di.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
+import java.util.concurrent.TimeUnit
 
 class MyApplication : DaggerApplication() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -19,6 +22,24 @@ class MyApplication : DaggerApplication() {
         createNotificationChannel(
             getString(R.string.contacts_observer_channel_id),
             getString(R.string.notification_channel_name)
+        )
+
+        scheduleDatabaseUpdateEvery15Min()
+
+    }
+
+    private fun scheduleDatabaseUpdateEvery15Min() {
+        val updateContacts = PeriodicWorkRequestBuilder<HourlyWorker>(
+            PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS,
+            TimeUnit.MILLISECONDS
+        )
+            .setConstraints(Constraints.Builder().setRequiresCharging(true).build())
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            getString(R.string.worker_tag),
+            ExistingPeriodicWorkPolicy.REPLACE,
+            updateContacts
         )
     }
 
@@ -36,7 +57,7 @@ class MyApplication : DaggerApplication() {
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
-        return DaggerAppComponent.builder().application(this).baseUrl("https://reqres.in/").build()
+        return DaggerAppComponent.builder().application(this).build()
 
     }
 }

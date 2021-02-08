@@ -1,4 +1,4 @@
-package com.am.ownagetask.di
+package com.am.ownagetask.di.modules
 
 import com.am.ownagetask.ui.MainActivity
 import dagger.Module

@@ -1,10 +1,11 @@
-package com.am.ownagetask
+package com.am.ownagetask.background
 
 import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
 import android.util.Log
+import com.am.ownagetask.updateRoomContacts
 
 class ContactsObserver(handler: Handler?, var context: Context) : ContentObserver(handler) {
 

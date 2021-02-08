@@ -19,6 +19,7 @@ fun ContentResolver.updateRoomContacts(context: Context) {
     var lastnumber: String? = "0"
 
     if (cursor != null && cursor.count > 0) {
+        val newContactsList = arrayListOf<ContactEntity>()
         while (cursor.moveToNext()) {
             var number: String?
             val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
@@ -43,7 +44,7 @@ fun ContentResolver.updateRoomContacts(context: Context) {
                         lastnumber = number
                         when (phoneCursor.getInt(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))) {
                             ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> {
-                                ContactsDatabase.getInstance(context).contactsDao().insert(ContactEntity(id, name, lastnumber))
+                                newContactsList.add(ContactEntity(id, name, lastnumber))
                                 Log.d(TAG, "id:$id  name:$name  number:$lastnumber ")
                             }
                             ContactsContract.CommonDataKinds.Phone.TYPE_HOME -> Log.d(
@@ -60,6 +61,8 @@ fun ContentResolver.updateRoomContacts(context: Context) {
                 phoneCursor?.close()
             }
         }
+        ContactsDatabase.getInstance(context).contactsDao().deleteAll()
+        ContactsDatabase.getInstance(context).contactsDao().insertAll(newContactsList)
     }
     cursor?.close()
 }
