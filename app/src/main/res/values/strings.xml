@@ -3,4 +3,7 @@
     <string name="permission_needed_title">Please allow access to contacts to continue.</string>
     <string name="permission_needed_description">Please allow access to contacts form application settings to continue.</string>
     <string name="permission_needed_intro">Please Enable Contact Permission</string>
+    <string name="contacts_observer_channel_id">69420</string>
+    <string name="notification_title">Contacts Observer Service</string>
+    <string name="notification_channel_name">Contacts Observer Service channel</string>
 </resources>
