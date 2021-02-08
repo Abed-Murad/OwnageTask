@@ -7,28 +7,37 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.am.ownagetask.ContactsService
 import com.am.ownagetask.R
-import com.am.ownagetask.room.ContactsDatabase
+import com.am.ownagetask.di.ViewModelFactory
+import com.am.ownagetask.room.ContactEntity
 import com.am.ownagetask.updateRoomContacts
+import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import javax.inject.Inject
 
+class MainActivity : DaggerAppCompatActivity() {
 
-class MainActivity : AppCompatActivity() {
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val mainActivityViewModel: MainActivityViewModel by viewModels { viewModelFactory }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
+        setContentView(R.layout.activity_main)
         startService()
 
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
-            // you have permission go ahead
             contentResolver.updateRoomContacts(this@MainActivity)
+            observeData()
         } else {
             // you do not have permission go request runtime permissions
             requestPermission(
@@ -37,9 +46,6 @@ class MainActivity : AppCompatActivity() {
                 REQUEST_RUNTIME_PERMISSION
             )
         }
-
-        initRecyclerView()
-
     }
 
     private fun checkPermission(context: Context?, Permission: String?): Boolean {
@@ -67,20 +73,40 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun initRecyclerView() {
-        val list = ContactsDatabase.getInstance(this).contactsDao().getAll()
-        contactsRecyclerView.adapter = ContactsAdapter(list.map { ContactItem(it.id, it.name, it.phoneNumber) })
-        contactsRecyclerView.layoutManager = LinearLayoutManager(this)
-        contactsRecyclerView.setHasFixedSize(true)
-        contactsRecyclerView.visibility = View.VISIBLE
-        contactsRecyclerView.addItemDecoration(
-            DividerItemDecoration(
-                contactsRecyclerView.context,
-                DividerItemDecoration.VERTICAL
+    private fun observeData() {
+        mainActivityViewModel.contacts.observe(this, Observer {
+            contactsRecyclerView.adapter =
+                ContactsAdapter(it.map { ContactItem(it.id, it.name, it.phoneNumber) })
+            contactsRecyclerView.layoutManager = LinearLayoutManager(this)
+            contactsRecyclerView.setHasFixedSize(true)
+            contactsRecyclerView.visibility = View.VISIBLE
+            contactsRecyclerView.addItemDecoration(
+                DividerItemDecoration(
+                    contactsRecyclerView.context,
+                    DividerItemDecoration.VERTICAL
+                )
             )
-        )
 
-        progressBar.visibility = View.GONE
+            progressBar.visibility = View.GONE
+        })
+    }
+
+    override fun onRequestPermissionsResult(
+        permsRequestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        when (permsRequestCode) {
+            REQUEST_RUNTIME_PERMISSION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // you have permission go ahead
+                    observeData()
+                } else {
+                    // you do not have permission show toast.
+                }
+                return
+            }
+        }
     }
 
 

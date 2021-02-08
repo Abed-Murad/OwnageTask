@@ -1,11 +1,12 @@
 package com.am.ownagetask.room
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
 interface ContactsDao {
     @Query("SELECT * FROM contact_table")
-    fun getAll(): List<ContactEntity>
+    fun getAll(): LiveData<List<ContactEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(Contact: ContactEntity): Long

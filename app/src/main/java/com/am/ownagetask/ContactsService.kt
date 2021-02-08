@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.provider.ContactsContract
 import androidx.core.app.NotificationCompat
 import com.am.ownagetask.ui.MainActivity
+import kotlinx.coroutines.InternalCoroutinesApi
 
 class ContactsService : Service() {
 
@@ -15,6 +16,8 @@ class ContactsService : Service() {
     override fun onCreate() {
         super.onCreate()
     }
+
+    @InternalCoroutinesApi
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         val notificationIntent = Intent(this, MainActivity::class.java)

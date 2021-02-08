@@ -8,8 +8,11 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.am.ownagetask.di.DaggerAppComponent
+import dagger.android.AndroidInjector
+import dagger.android.DaggerApplication
 
-class MyApplication : Application() {
+class MyApplication : DaggerApplication() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
@@ -32,5 +35,9 @@ class MyApplication : Application() {
         return channelId
     }
 
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
+        return DaggerAppComponent.builder().application(this).baseUrl("https://reqres.in/").build()
+
+    }
 }
 
