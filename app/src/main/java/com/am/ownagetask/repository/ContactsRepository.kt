@@ -5,7 +5,6 @@ import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.am.ownagetask.TAG
 import com.am.ownagetask.room.ContactEntity
 import com.am.ownagetask.room.ContactsDao
 import javax.inject.Inject
@@ -16,15 +15,16 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
 
     fun getContacts(): LiveData<List<ContactEntity>> {
         return contactsDao.getAll()
-
     }
 
-    fun updateRoomContacts(contactsList: List<ContactEntity>) {
+    private fun updateRoomContacts(contactsList: List<ContactEntity>) {
+
         contactsDao.deleteAll()
         contactsDao.insertAll(contactsList)
+
     }
 
-
+    // As much as you try to clean it, working with cursor is almost always messy!
     fun fetchContactsFromContactsProvider() {
         var contentResolver = context.contentResolver
         val cursor = getContactsQuery(contentResolver)
@@ -66,6 +66,7 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
                     phoneCursor?.close()
                 }
             }
+
             updateRoomContacts(newContactsList)
             for (i in newContactsList.indices) {
                 Log.d("www", "$i -> ${newContactsList[i]}")
@@ -95,5 +96,10 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
     fun syncWithTheCloud(contactsList: List<ContactEntity>) {
         TODO()
     }
+
+    companion object {
+        private val TAG = ContactsRepository::class.java.simpleName
+    }
+
 }
 

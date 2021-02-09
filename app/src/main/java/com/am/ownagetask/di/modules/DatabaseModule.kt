@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Handler
 import com.am.ownagetask.repository.ContactsRepository
 import com.am.ownagetask.room.ContactsDao
-import com.am.ownagetask.room.ContactsDatabase
+import com.am.ownagetask.room.AppDatabase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -14,8 +14,8 @@ class DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideRoom(context: Context): ContactsDatabase {
-        return ContactsDatabase.getInstance(context)
+    fun provideRoom(context: Context): AppDatabase {
+        return AppDatabase.buildDatabase(context)
     }
 
     @Provides
@@ -26,8 +26,8 @@ class DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideContactsDao(contactsDatabase: ContactsDatabase): ContactsDao {
-        return contactsDatabase.contactsDao()
+    fun provideContactsDao(appDatabase: AppDatabase): ContactsDao {
+        return appDatabase.contactsDao()
     }
 
     @Provides

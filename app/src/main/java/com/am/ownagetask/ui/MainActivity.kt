@@ -2,10 +2,14 @@ package com.am.ownagetask.ui
 
 import android.Manifest
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
@@ -26,7 +30,7 @@ class MainActivity : DaggerAppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val mainActivityViewModel: MainActivityViewModel by viewModels { viewModelFactory }
+    private val mViewModel: MainActivityViewModel by viewModels { viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,7 @@ class MainActivity : DaggerAppCompatActivity() {
         observeData()
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
             startService()
+            mViewModel.fetchContactsFromContactsProvider()
         } else {
             // you do not have permission go request runtime permissions
             requestPermission(
@@ -72,7 +77,7 @@ class MainActivity : DaggerAppCompatActivity() {
 
 
     private fun observeData() {
-        mainActivityViewModel.getContacts().observe(this, Observer {
+        mViewModel.getContacts().observe(this, Observer {
             if (it != null && it.isNotEmpty()) {
                 contactsRecyclerView.adapter =
                     ContactsAdapter(it.map { ContactItem(it.id, it.name, it.phoneNumber) })
@@ -104,7 +109,7 @@ class MainActivity : DaggerAppCompatActivity() {
             REQUEST_RUNTIME_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // you have permission go ahead
-                    mainActivityViewModel.fetchContactsFromContactsProvider()
+                    mViewModel.fetchContactsFromContactsProvider()
                     startService()
                 } else {
                     // you do not have permission show toast.
@@ -115,9 +120,28 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
 
+    var mService: ContactsService? = null
+    var mIsBound: Boolean? = null
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, iBinder: IBinder) {
+            Log.d("ttt", "ServiceConnection: connected to service.")
+            // We've bound to MyService, cast the IBinder and get MyBinder instance
+            val binder = iBinder as ContactsService.MyBinder
+            mService = binder.service
+            mIsBound = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            Log.d("ttt", "ServiceConnection: disconnected from service.")
+            mIsBound = false
+        }
+    }
+
+
     private fun startService() {
         val myServiceIntent = Intent(this, ContactsService::class.java)
-        ContextCompat.startForegroundService(this, myServiceIntent)
+        bindService(myServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     companion object {
