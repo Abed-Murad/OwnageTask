@@ -38,13 +38,8 @@ class ContactsAdapter(var contactsList: List<ContactItem>) :
     inner class ContactHolder(private val binding: ItemContactBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        private var mContactItem: ContactItem? = null
-
         fun bind(contactItem: ContactItem) {
-            this.mContactItem = contactItem
-            binding.nameTextView.text = contactItem.name
-            binding.contactImageView.text = contactItem.name[0].toString()
-            binding.numberTextView.text = contactItem.phoneNumber
+            binding.contact = contactItem
             binding.executePendingBindings()
         }
 

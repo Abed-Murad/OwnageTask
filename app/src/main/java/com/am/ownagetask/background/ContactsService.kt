@@ -52,7 +52,7 @@ class ContactsService : DaggerService() {
 
     private fun registerContactsContentObserver() {
         contentResolver.registerContentObserver(
-            ContactsContract.Contacts.CONTENT_URI, true, contentObserver
+            ContactsContract.Contacts.CONTENT_VCARD_URI, false, contentObserver
         )
     }
 

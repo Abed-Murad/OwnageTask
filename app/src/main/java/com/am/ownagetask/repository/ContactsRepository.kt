@@ -68,9 +68,6 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
             }
 
             updateRoomContacts(newContactsList)
-            for (i in newContactsList.indices) {
-                Log.d("www", "$i -> ${newContactsList[i]}")
-            }
         }
         cursor?.close()
     }

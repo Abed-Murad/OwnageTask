@@ -30,7 +30,7 @@
 
 
         <LinearLayout
-            android:id="@+id/permission_denied_view"
+            android:id="@+id/permissionDeniedLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -38,23 +38,26 @@
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/permission_denied_rationale"
+                android:id="@+id/permissionNeededTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:textSize="16sp"
-                tools:text="@string/permission_needed_title" />
+                android:text="@string/permission_needed_title" />
 
             <Button
-                android:id="@+id/grant_permission_button"
+                android:id="@+id/grantPermissionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="@string/permission_needed_intro" />
         </LinearLayout>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
