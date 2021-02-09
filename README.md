@@ -2,7 +2,7 @@
 
 ## Notes 
 
- *  100% `Kotlin 
+ *  100% `Kotlin` 
  * `Room` Used for Local storage. 
  * `Dagger2` Used for Dependency injection
  * `MVVM` Architecture + Architecture components(`LiveData, ViewModel,WorkManger...) 
