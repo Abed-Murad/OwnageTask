@@ -4,13 +4,18 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.am.ownagetask.updateRoomContacts
+import com.am.ownagetask.repository.ContactsRepository
+import javax.inject.Inject
 
-class HourlyWorker(appContext: Context, workerParams: WorkerParameters) :
+class ContactsSyncWorker @Inject constructor(
+    var contactsRepository: ContactsRepository,
+    appContext: Context,
+    workerParams: WorkerParameters
+) :
     Worker(appContext, workerParams) {
     override fun doWork(): Result {
         Log.d("www", "work started!")
-        applicationContext.contentResolver.updateRoomContacts(applicationContext)
+        contactsRepository.fetchContactsFromContactsProvider()
         return Result.success()
     }
 }

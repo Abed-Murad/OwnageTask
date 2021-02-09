@@ -7,12 +7,18 @@ import android.os.IBinder
 import android.provider.ContactsContract
 import androidx.core.app.NotificationCompat
 import com.am.ownagetask.R
+import com.am.ownagetask.di.ViewModelFactory
 import com.am.ownagetask.ui.MainActivity
+import dagger.android.DaggerService
 import kotlinx.coroutines.InternalCoroutinesApi
+import javax.inject.Inject
 
-class ContactsService : Service() {
+class ContactsService : DaggerService() {
 
-    private val contentObserver: ContactsObserver by lazy { ContactsObserver(null, this) }
+
+    @Inject
+    lateinit var contentObserver: ContactsObserver
+
 
     override fun onCreate() {
         super.onCreate()

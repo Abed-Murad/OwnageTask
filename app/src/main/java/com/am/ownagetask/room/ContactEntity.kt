@@ -8,4 +8,9 @@ data class ContactEntity(
     var id: String,
     @PrimaryKey var name: String,
     var phoneNumber: String
-)
+) {
+    override fun toString(): String {
+        return "$id : $name : $phoneNumber"
+    }
+}
+

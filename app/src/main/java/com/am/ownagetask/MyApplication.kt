@@ -7,9 +7,8 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.room.Update
 import androidx.work.*
-import com.am.ownagetask.background.HourlyWorker
+import com.am.ownagetask.background.ContactsSyncWorker
 import com.am.ownagetask.di.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
@@ -29,7 +28,7 @@ class MyApplication : DaggerApplication() {
     }
 
     private fun scheduleDatabaseUpdateEvery15Min() {
-        val updateContacts = PeriodicWorkRequestBuilder<HourlyWorker>(
+        val updateContacts = PeriodicWorkRequestBuilder<ContactsSyncWorker>(
             PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS,
             TimeUnit.MILLISECONDS
         )

@@ -1,18 +1,21 @@
 package com.am.ownagetask.background
 
-import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
 import android.util.Log
-import com.am.ownagetask.updateRoomContacts
+import com.am.ownagetask.repository.ContactsRepository
+import javax.inject.Inject
 
-class ContactsObserver(handler: Handler?, var context: Context) : ContentObserver(handler) {
+class ContactsObserver @Inject constructor(
+    handler: Handler?,
+    var contactsRepository: ContactsRepository
+) : ContentObserver(handler) {
 
     override fun onChange(selfChange: Boolean, uri: Uri?) {
         super.onChange(selfChange, uri)
         Log.d(TAG, "onChange 1 -> selfChange : $selfChange :  uri : $uri")
-        context.contentResolver.updateRoomContacts(context)
+        contactsRepository.fetchContactsFromContactsProvider()
     }
 
     override fun onChange(selfChange: Boolean) {

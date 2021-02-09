@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.am.ownagetask.background.ContactsService
 import com.am.ownagetask.R
 import com.am.ownagetask.di.ViewModelFactory
-import com.am.ownagetask.updateRoomContacts
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -105,7 +104,7 @@ class MainActivity : DaggerAppCompatActivity() {
             REQUEST_RUNTIME_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // you have permission go ahead
-                    contentResolver.updateRoomContacts(this)
+                    mainActivityViewModel.fetchContactsFromContactsProvider()
                     startService()
                 } else {
                     // you do not have permission show toast.
