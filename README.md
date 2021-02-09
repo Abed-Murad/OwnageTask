@@ -13,7 +13,7 @@
 
 ## Apk
 
-[Download APK](/Extra/app-debug.apk)
+[Download APK](/extra/app-debug.apk)
 
 ## ScreenShots
 
