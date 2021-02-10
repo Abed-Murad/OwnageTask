@@ -1,7 +1,6 @@
 package com.am.ownagetask.ui
 
 import android.Manifest
-import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -14,16 +13,16 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.am.ownagetask.R
 import com.am.ownagetask.background.ContactsService
+import com.am.ownagetask.checkPermission
 import com.am.ownagetask.databinding.ActivityMainBinding
 import com.am.ownagetask.di.ViewModelFactory
+import com.am.ownagetask.requestPermission
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -58,6 +57,7 @@ class MainActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        mViewModel.uiStatus.value = LOADING
 
         initUI()
         observeData()
@@ -66,10 +66,11 @@ class MainActivity : DaggerAppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        mViewModel.uiStatus.value = LOADING
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
+            mViewModel.uiStatus.value = LOADING
             startService()
             mViewModel.fetchContactsFromContactsProvider()
-            mViewModel.uiStatus.value = LOADING
         } else {
             // you do not have permission go request runtime permissions
             requestPermission(
@@ -80,38 +81,13 @@ class MainActivity : DaggerAppCompatActivity() {
         }
     }
 
-    private fun checkPermission(context: Context?, Permission: String?): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context!!,
-            Permission!!
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermission(
-        thisActivity: Activity?,
-        Permission: Array<String>,
-        code: Int
-    ) {
-        if (ContextCompat.checkSelfPermission(
-                thisActivity!!,
-                Permission[0]
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(thisActivity, Permission[0])) {
-            } else {
-                ActivityCompat.requestPermissions(thisActivity, Permission, code)
-            }
-        }
-    }
-
 
     private fun observeData() {
         mViewModel.getContacts().observe(this, Observer { contact ->
+            mViewModel.uiStatus.value = SUCCESS
             if (contact != null && contact.isNotEmpty()) {
                 contactsRecyclerView.adapter =
                     ContactsAdapter(contact.map { ContactItem(it.id, it.name, it.phoneNumber) })
-                mViewModel.uiStatus.value = SUCCESS
-
             }
         })
         mViewModel.uiStatus.observe(this, Observer { status ->
@@ -149,6 +125,7 @@ class MainActivity : DaggerAppCompatActivity() {
             val uri: Uri = Uri.fromParts("package", packageName, null)
             intent.data = uri
             startActivity(intent)
+
         }
 
     }
@@ -164,11 +141,9 @@ class MainActivity : DaggerAppCompatActivity() {
                     // you have permission go ahead
                     mViewModel.fetchContactsFromContactsProvider()
                     startService()
-                    mViewModel.uiStatus.value = SUCCESS
                 } else {
                     mViewModel.uiStatus.value = NO_PERMISSIONS
                 }
-                return
             }
         }
     }
