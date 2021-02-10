@@ -38,6 +38,7 @@
     - `MainActivity`
     - `MainActivityViewModel`
     - `ViewModelFactory` needed to be able to add `ContactsRepository` as a parapeter for `MainActivityViewModel`.
+- `GlobalValues` a key-value stroage option, to store `permissionsStatus`, `uiStatus`.    
 - `MyApplication` A sub class of `DaggerApplication`.
 - `PermissionHelper` Inculdes some helper functions for permissions  `checkPermission(parms)` & `requestPermission(parms).
 
