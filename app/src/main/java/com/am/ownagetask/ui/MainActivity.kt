@@ -21,7 +21,6 @@ import com.am.ownagetask.R
 import com.am.ownagetask.background.ContactsService
 import com.am.ownagetask.checkPermission
 import com.am.ownagetask.databinding.ActivityMainBinding
-import com.am.ownagetask.di.ViewModelFactory
 import com.am.ownagetask.requestPermission
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -32,43 +31,38 @@ class MainActivity : DaggerAppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-
     private val mViewModel: MainActivityViewModel by viewModels { viewModelFactory }
-    lateinit var mBinding: ActivityMainBinding
-    var mService: ContactsService? = null
-    var mIsBound: Boolean? = null
 
-    private val serviceConnection = object : ServiceConnection {
+    lateinit var mBinding: ActivityMainBinding
+
+    var mService: ContactsService? = null
+
+    private val mServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, iBinder: IBinder) {
             Log.d("ttt", "ServiceConnection: connected to service.")
             // We've bound to MyService, cast the IBinder and get MyBinder instance
             val binder = iBinder as ContactsService.MyBinder
             mService = binder.service
-            mIsBound = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             Log.d("ttt", "ServiceConnection: disconnected from service.")
-            mIsBound = false
         }
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        mViewModel.uiStatus.value = LOADING
-
+        setUIStatus(LOADING)
         initUI()
-        observeData()
+        observeContactChanges()
 
     }
 
     override fun onResume() {
         super.onResume()
-        mViewModel.uiStatus.value = LOADING
+
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
-            mViewModel.uiStatus.value = LOADING
             startService()
             mViewModel.fetchContactsFromContactsProvider()
         } else {
@@ -82,31 +76,12 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
 
-    private fun observeData() {
+    private fun observeContactChanges() {
         mViewModel.getContacts().observe(this, Observer { contact ->
-            mViewModel.uiStatus.value = SUCCESS
             if (contact != null && contact.isNotEmpty()) {
                 contactsRecyclerView.adapter =
                     ContactsAdapter(contact.map { ContactItem(it.id, it.name, it.phoneNumber) })
-            }
-        })
-        mViewModel.uiStatus.observe(this, Observer { status ->
-            when (status) {
-                SUCCESS -> {
-                    mBinding.contactsRecyclerView.visibility = View.VISIBLE
-                    mBinding.progressBar.visibility = View.GONE
-                    mBinding.permissionDeniedLayout.visibility = View.GONE
-                }
-                LOADING -> {
-                    mBinding.contactsRecyclerView.visibility = View.GONE
-                    mBinding.progressBar.visibility = View.VISIBLE
-                    mBinding.permissionDeniedLayout.visibility = View.GONE
-                }
-                NO_PERMISSIONS -> {
-                    mBinding.contactsRecyclerView.visibility = View.GONE
-                    mBinding.progressBar.visibility = View.GONE
-                    mBinding.permissionDeniedLayout.visibility = View.VISIBLE
-                }
+                setUIStatus(SUCCESS)
             }
         })
     }
@@ -127,7 +102,6 @@ class MainActivity : DaggerAppCompatActivity() {
             startActivity(intent)
 
         }
-
     }
 
     override fun onRequestPermissionsResult(
@@ -138,25 +112,46 @@ class MainActivity : DaggerAppCompatActivity() {
         when (permsRequestCode) {
             REQUEST_RUNTIME_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    setUIStatus(LOADING)
                     // you have permission go ahead
                     mViewModel.fetchContactsFromContactsProvider()
                     startService()
                 } else {
-                    mViewModel.uiStatus.value = NO_PERMISSIONS
+                    setUIStatus(NO_PERMISSIONS)
                 }
             }
         }
     }
 
-
     private fun startService() {
         val myServiceIntent = Intent(this, ContactsService::class.java)
-        bindService(myServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+        bindService(myServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(serviceConnection)
+        unbindService(mServiceConnection)
+    }
+
+    private fun setUIStatus(status: String) {
+        when (status) {
+            SUCCESS -> {
+                mBinding.contactsRecyclerView.visibility = View.VISIBLE
+                mBinding.progressBar.visibility = View.GONE
+                mBinding.permissionDeniedLayout.visibility = View.GONE
+            }
+            LOADING -> {
+                mBinding.contactsRecyclerView.visibility = View.GONE
+                mBinding.progressBar.visibility = View.VISIBLE
+                mBinding.permissionDeniedLayout.visibility = View.GONE
+            }
+            NO_PERMISSIONS -> {
+                mBinding.contactsRecyclerView.visibility = View.GONE
+                mBinding.progressBar.visibility = View.GONE
+                mBinding.permissionDeniedLayout.visibility = View.VISIBLE
+            }
+        }
+
     }
 
     companion object {
@@ -164,6 +159,6 @@ class MainActivity : DaggerAppCompatActivity() {
         const val REQUEST_RUNTIME_PERMISSION = 1001
         const val LOADING = "loading"
         const val NO_PERMISSIONS = "no_permissions"
-        const val SUCCESS = "sucess"
+        const val SUCCESS = "success"
     }
 }

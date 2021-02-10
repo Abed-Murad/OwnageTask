@@ -22,7 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
                     ?: buildDatabase(context).also { INSTANCE = it }
             }
 
-        fun buildDatabase(context: Context): AppDatabase {
+        private fun buildDatabase(context: Context): AppDatabase {
             if (INSTANCE == null) {
                 INSTANCE = Room.databaseBuilder(
                     context,

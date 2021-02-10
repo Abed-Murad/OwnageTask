@@ -1,4 +1,4 @@
-package com.am.ownagetask.di
+package com.am.ownagetask.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

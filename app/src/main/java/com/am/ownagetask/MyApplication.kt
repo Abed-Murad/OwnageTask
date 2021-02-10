@@ -22,9 +22,7 @@ class MyApplication : DaggerApplication() {
             getString(R.string.contacts_observer_channel_id),
             getString(R.string.notification_channel_name)
         )
-
         scheduleDatabaseUpdateEvery15Min()
-
     }
 
     private fun scheduleDatabaseUpdateEvery15Min() {
@@ -57,7 +55,6 @@ class MyApplication : DaggerApplication() {
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
         return DaggerAppComponent.builder().application(this).build()
-
     }
 }
 

@@ -15,7 +15,7 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun provideRoom(context: Context): AppDatabase {
-        return AppDatabase.buildDatabase(context)
+        return AppDatabase.getInstance(context)
     }
 
     @Provides

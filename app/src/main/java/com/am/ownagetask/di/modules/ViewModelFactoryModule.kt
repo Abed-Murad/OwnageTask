@@ -2,7 +2,7 @@ package com.am.ownagetask.di.modules
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.am.ownagetask.di.ViewModelFactory
+import com.am.ownagetask.ui.ViewModelFactory
 import dagger.Module
 import dagger.Provides
 import javax.inject.Provider

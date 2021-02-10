@@ -1,33 +1,28 @@
 package com.am.ownagetask.background
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.provider.ContactsContract
 import androidx.core.app.NotificationCompat
 import com.am.ownagetask.R
-import com.am.ownagetask.di.ViewModelFactory
 import com.am.ownagetask.ui.MainActivity
 import dagger.android.DaggerService
-import kotlinx.coroutines.InternalCoroutinesApi
 import javax.inject.Inject
 
 class ContactsService : DaggerService() {
 
     @Inject
-    lateinit var contentObserver: ContactsObserver
+    lateinit var mContentObserver: ContactsObserver
+    private val mBinder: IBinder = MyBinder()
 
-    @InternalCoroutinesApi
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onBind(intent: Intent?): IBinder {
         // Show Notification,
         startNotification()
 
         registerContactsContentObserver()
-
-        return START_NOT_STICKY
+        return mBinder
     }
 
     private fun startNotification() {
@@ -45,29 +40,20 @@ class ContactsService : DaggerService() {
         startForeground(1010, notification)
     }
 
+    private fun registerContactsContentObserver() {
+        contentResolver.registerContentObserver(
+            ContactsContract.Contacts.CONTENT_VCARD_URI, false, mContentObserver
+        )
+    }
+
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterContactsContentObserver()
     }
 
-    private fun registerContactsContentObserver() {
-        contentResolver.registerContentObserver(
-            ContactsContract.Contacts.CONTENT_VCARD_URI, false, contentObserver
-        )
-    }
-
     private fun unregisterContactsContentObserver() {
-        contentResolver.unregisterContentObserver(contentObserver)
-    }
-
-    private val mBinder: IBinder = MyBinder()
-
-    override fun onBind(intent: Intent?): IBinder {
-        // Show Notification,
-        startNotification()
-
-        registerContactsContentObserver()
-        return mBinder
+        contentResolver.unregisterContentObserver(mContentObserver)
     }
 
     inner class MyBinder : Binder() {

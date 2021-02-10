@@ -17,8 +17,8 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
         return contactsDao.getAll()
     }
 
+    // Move to a background thread using Flow Api
     private fun updateRoomContacts(contactsList: List<ContactEntity>) {
-
         contactsDao.deleteAll()
         contactsDao.insertAll(contactsList)
 

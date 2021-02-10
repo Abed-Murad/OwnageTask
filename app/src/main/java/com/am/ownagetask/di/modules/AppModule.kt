@@ -15,5 +15,4 @@ class AppModule {
     fun providesContext(app: Application): Context {
         return app.applicationContext
     }
-
 }

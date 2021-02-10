@@ -12,8 +12,6 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(var contactsRepository: ContactsRepository) :
     ViewModel() {
 
-    var uiStatus: MutableLiveData<String> = MutableLiveData<String>("LOADING")
-
     fun fetchContactsFromContactsProvider() {
         contactsRepository.fetchContactsFromContactsProvider()
     }
@@ -21,7 +19,6 @@ class MainActivityViewModel @Inject constructor(var contactsRepository: Contacts
     fun getContacts(): LiveData<List<ContactEntity>> {
         return contactsRepository.getContacts()
     }
-
 
 }
 
