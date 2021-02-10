@@ -5,6 +5,7 @@ import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.am.ownagetask.GlobalValues
 import com.am.ownagetask.room.ContactEntity
 import com.am.ownagetask.room.ContactsDao
 import javax.inject.Inject
@@ -93,6 +94,18 @@ class ContactsRepository @Inject constructor(var context: Context, var contactsD
     fun syncWithTheCloud(contactsList: List<ContactEntity>) {
         TODO()
     }
+
+    fun updatePermissionsStatus(status: String) {
+        GlobalValues.permissionsStatus = status
+    }
+
+    fun updateUiStatus(status: String) {
+        GlobalValues.uiStatus = status
+    }
+
+    fun getUiStatus() = GlobalValues.uiStatus
+
+    fun getPermissionsStatus() = GlobalValues.permissionsStatus
 
     companion object {
         private val TAG = ContactsRepository::class.java.simpleName

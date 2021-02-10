@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.work.*
 import com.am.ownagetask.background.ContactsSyncWorker
 import com.am.ownagetask.di.DaggerAppComponent
+import com.chibatching.kotpref.Kotpref
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
 import java.util.concurrent.TimeUnit
@@ -18,6 +19,7 @@ class MyApplication : DaggerApplication() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
+        Kotpref.init(this)
         createNotificationChannel(
             getString(R.string.contacts_observer_channel_id),
             getString(R.string.notification_channel_name)

@@ -13,15 +13,12 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.am.ownagetask.R
+import com.am.ownagetask.*
 import com.am.ownagetask.background.ContactsService
-import com.am.ownagetask.checkPermission
-import com.am.ownagetask.databinding.ActivityMainBinding
-import com.am.ownagetask.requestPermission
+import com.chibatching.kotpref.livedata.asLiveData
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -33,69 +30,97 @@ class MainActivity : DaggerAppCompatActivity() {
     lateinit var viewModelFactory: ViewModelFactory
     private val mViewModel: MainActivityViewModel by viewModels { viewModelFactory }
 
-    lateinit var mBinding: ActivityMainBinding
-
     var mService: ContactsService? = null
 
     private val mServiceConnection = object : ServiceConnection {
+        var isServiceConnected = false
+
         override fun onServiceConnected(className: ComponentName, iBinder: IBinder) {
             Log.d("ttt", "ServiceConnection: connected to service.")
             // We've bound to MyService, cast the IBinder and get MyBinder instance
             val binder = iBinder as ContactsService.MyBinder
             mService = binder.service
+            isServiceConnected = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             Log.d("ttt", "ServiceConnection: disconnected from service.")
+            isServiceConnected = false
         }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        setUIStatus(LOADING)
-        initUI()
-        observeContactChanges()
+        setContentView(R.layout.activity_main)
 
-    }
 
-    override fun onResume() {
-        super.onResume()
+        GlobalValues.asLiveData(GlobalValues::uiStatus)
+            .observe(this, Observer<String> {
+                when (it) {
+                    CONST.LOADING -> {
+                        contactsRecyclerView.visibility = View.GONE
+                        progressBar.visibility = View.VISIBLE
+                        permissionDeniedLayout.visibility = View.GONE
+                        if (mViewModel.getPermissionsStatus() == CONST.NO_PERMISSIONS_SETTINGS) {
+                            contactsRecyclerView.visibility = View.GONE
+                            progressBar.visibility = View.GONE
+                            permissionDeniedLayout.visibility = View.VISIBLE
+                        }
+                    }
+                    CONST.SUCCESS -> {
+                        contactsRecyclerView.visibility = View.VISIBLE
+                        progressBar.visibility = View.GONE
+                        permissionDeniedLayout.visibility = View.GONE
+                    }
+
+                }
+            })
+
+
+        initRecyclerView()
 
         if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
+            mViewModel.updatePermissionsStatus(CONST.PERMISSIONS_GRANTED)
+            populateRecyclerView()
             startService()
-            mViewModel.fetchContactsFromContactsProvider()
         } else {
             // you do not have permission go request runtime permissions
             requestPermission(
                 this@MainActivity,
                 arrayOf(READ_CONTACTS_PERMISSION),
-                REQUEST_RUNTIME_PERMISSION
+                REQUEST_CODE
             )
+        }
+
+        initGrantPermissionBtnListener()
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (checkPermission(this, READ_CONTACTS_PERMISSION)) {
+            mViewModel.fetchContactsFromContactsProvider()
+            populateRecyclerView()
+            if (!mServiceConnection.isServiceConnected) {
+                startService()
+            }
         }
     }
 
-
-    private fun observeContactChanges() {
+    private fun populateRecyclerView() {
         mViewModel.getContacts().observe(this, Observer { contact ->
             if (contact != null && contact.isNotEmpty()) {
                 contactsRecyclerView.adapter =
                     ContactsAdapter(contact.map { ContactItem(it.id, it.name, it.phoneNumber) })
-                setUIStatus(SUCCESS)
+                mViewModel.updateUIStatus(CONST.SUCCESS)
             }
         })
     }
 
-    private fun initUI() {
-        mBinding.contactsRecyclerView.layoutManager = LinearLayoutManager(this)
-        mBinding.contactsRecyclerView.setHasFixedSize(true)
-        mBinding.contactsRecyclerView.addItemDecoration(
-            DividerItemDecoration(
-                contactsRecyclerView.context,
-                DividerItemDecoration.VERTICAL
-            )
-        )
-        mBinding.grantPermissionButton.setOnClickListener {
+    private fun initGrantPermissionBtnListener() {
+        grantPermissionButton.setOnClickListener {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             val uri: Uri = Uri.fromParts("package", packageName, null)
             intent.data = uri
@@ -104,23 +129,15 @@ class MainActivity : DaggerAppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        permsRequestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        when (permsRequestCode) {
-            REQUEST_RUNTIME_PERMISSION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setUIStatus(LOADING)
-                    // you have permission go ahead
-                    mViewModel.fetchContactsFromContactsProvider()
-                    startService()
-                } else {
-                    setUIStatus(NO_PERMISSIONS)
-                }
-            }
-        }
+    private fun initRecyclerView() {
+        contactsRecyclerView.layoutManager = LinearLayoutManager(this)
+        contactsRecyclerView.setHasFixedSize(true)
+        contactsRecyclerView.addItemDecoration(
+            DividerItemDecoration(
+                contactsRecyclerView.context,
+                DividerItemDecoration.VERTICAL
+            )
+        )
     }
 
     private fun startService() {
@@ -128,37 +145,37 @@ class MainActivity : DaggerAppCompatActivity() {
         bindService(myServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)
     }
 
+    override fun onRequestPermissionsResult(
+        permsRequestCode: Int, permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        when (permsRequestCode) {
+            REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // you have permission go ahead
+                    mViewModel.fetchContactsFromContactsProvider()
+                    mViewModel.updatePermissionsStatus(CONST.PERMISSIONS_GRANTED)
+                    startService()
+                } else {
+                    mViewModel.updateUIStatus(CONST.LOADING)
+                    mViewModel.updatePermissionsStatus(CONST.NO_PERMISSIONS_SETTINGS)
+                }
+            }
+        }
+    }
+
+
     override fun onDestroy() {
         super.onDestroy()
         unbindService(mServiceConnection)
     }
 
-    private fun setUIStatus(status: String) {
-        when (status) {
-            SUCCESS -> {
-                mBinding.contactsRecyclerView.visibility = View.VISIBLE
-                mBinding.progressBar.visibility = View.GONE
-                mBinding.permissionDeniedLayout.visibility = View.GONE
-            }
-            LOADING -> {
-                mBinding.contactsRecyclerView.visibility = View.GONE
-                mBinding.progressBar.visibility = View.VISIBLE
-                mBinding.permissionDeniedLayout.visibility = View.GONE
-            }
-            NO_PERMISSIONS -> {
-                mBinding.contactsRecyclerView.visibility = View.GONE
-                mBinding.progressBar.visibility = View.GONE
-                mBinding.permissionDeniedLayout.visibility = View.VISIBLE
-            }
-        }
-
-    }
-
     companion object {
         const val READ_CONTACTS_PERMISSION = Manifest.permission.READ_CONTACTS
-        const val REQUEST_RUNTIME_PERMISSION = 1001
-        const val LOADING = "loading"
-        const val NO_PERMISSIONS = "no_permissions"
-        const val SUCCESS = "success"
+        const val REQUEST_CODE = 1001
     }
+
 }
+
+
+

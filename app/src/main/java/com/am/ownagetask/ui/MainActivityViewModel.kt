@@ -1,10 +1,7 @@
 package com.am.ownagetask.ui
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.work.Operation
 import com.am.ownagetask.repository.ContactsRepository
 import com.am.ownagetask.room.ContactEntity
 import javax.inject.Inject
@@ -19,6 +16,15 @@ class MainActivityViewModel @Inject constructor(var contactsRepository: Contacts
     fun getContacts(): LiveData<List<ContactEntity>> {
         return contactsRepository.getContacts()
     }
+
+
+    fun updatePermissionsStatus(status: String) = contactsRepository.updatePermissionsStatus(status)
+    fun getPermissionsStatus() = contactsRepository.getPermissionsStatus()
+
+    fun updateUIStatus(status: String) = contactsRepository.updateUiStatus(status)
+
+    fun getUIStatus() = contactsRepository.getUiStatus()
+
 
 }
 
